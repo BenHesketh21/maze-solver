@@ -50,16 +50,13 @@ def find_adjacent_spaces(space, path):
             adjacent_spaces.pop(adjacent_spaces.index(found_space))
     return adjacent_spaces
 
-def is_maze_solved(current_space, maze, path, solved_paths_to_check):
+def is_maze_solved(current_space, maze, path):
     adjacent_spaces = find_adjacent_spaces(current_space, path)
     maze_solved = False
-    paths_already_solved = [[]]
-    for path_and_maze in solved_paths_to_check:
-        paths_already_solved.append(path_and_maze[0])
     for side in adjacent_spaces:
         row = maze[side[1]]
         value = row[side[0]]
-        if value == "X" and path not in paths_already_solved:
+        if value == "X":
             maze_solved = True
     return maze_solved
 
@@ -76,13 +73,13 @@ def change_value(maze, space, value):
 
 def get_available(list_of_spaces, maze, failed_spaces_list):
     available = []
-    logging.debug(f"Failed: {failed_spaces_list}")
+    logging.debug("Failed: %s", failed_spaces_list)
     for space in list_of_spaces:
         if is_space_available(space, maze, failed_spaces_list):
             available.append(space)
     return available
 
-def cls(): 
+def cls():
     os.system('clear')
 
 def reset_maze(maze_to_reset):
@@ -94,13 +91,14 @@ def reset_maze(maze_to_reset):
 
 
 
-def solve_maze(maze, solved, failed_spaces, starting_point):
+def solve_maze(maze, failed_spaces, starting_point):
     
     path = [starting_point]
     current_space = starting_point
     print("Current", current_space)
     visited_space = "x"
-    while not is_maze_solved(current_space, maze, path, solved):
+    while not is_maze_solved(current_space, maze, path):
+        cls()
         print(print_maze(maze))
         time.sleep(0.25)
         available_next_spaces = find_adjacent_spaces(current_space, path)
@@ -124,37 +122,21 @@ def solve_maze(maze, solved, failed_spaces, starting_point):
             maze = change_value(maze, next_space, visited_space)
             current_space = next_space
             path.append(current_space)
-        cls()
-    return print_maze(maze), path, count
+    return print_maze(maze), path
 
 maze_to_solve = [
-    ["#","#","#","#","#","O","#","#","#"],
-    ["#"," "," "," "," "," "," "," ","#"],
-    ["#"," ","#","#","#","#","#"," ","#"],
-    ["#"," ","#"," "," "," ","#"," ","#"],
-    ["#"," ","#"," ","#"," ","#"," ","#"],
-    ["#"," ","#"," ","#"," ","#"," ","#"],
-    ["#"," ","#"," ","#"," ","#","#","#"],
-    ["#"," "," "," "," "," "," "," ","#"],
+    ["#","#","#","#","#","#","#","#","#"],
+    ["O"," "," "," "," "," "," "," ","#"],
+    ["#"," ","#","#","#","#","#","#","#"],
+    ["#"," "," ","#"," "," ","#"," ","#"],
+    ["#"," "," ","#"," "," ","#"," ","#"],
+    ["#"," "," ","#","#"," ","#"," ","#"],
+    ["#"," "," "," ","#"," "," "," ","#"],
+    ["#"," "," "," "," "," ","#"," ","#"],
     ["#","#","#","#","#","#","#","X","#"]
 ]
 
-solved_paths = []
-while True:
-    print(f"Attempt Number: {count}")
-    start_point = find_start_of_maze(maze_to_solve)
-    failed = []
-    solved_maze, solved_path, count = solve_maze(maze_to_solve, solved_paths, failed, start_point)
-    solved_paths.append((solved_path, solved_maze))
-    maze_to_solve = reset_maze(maze_to_solve)
-    print(F"Solved Outside: {solved_paths}")
 
-FIRST = True
-for paths in solved_paths:
-    if FIRST:
-        smallest_path = paths
-        FIRST = False
-    if len(paths[0]) < len(smallest_path[0]):
-        smallest_path = paths
-
-print(smallest_path[1])
+start_point = find_start_of_maze(maze_to_solve)
+failed = []
+print(solve_maze(maze_to_solve, failed, start_point)[0])
